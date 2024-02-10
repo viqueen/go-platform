@@ -17,6 +17,12 @@ make schema
 make harness
 ```
 
+- start web client
+
+```bash
+make webapp
+```
+
 ### domains
 
 - init
