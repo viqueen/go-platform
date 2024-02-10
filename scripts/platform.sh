@@ -5,6 +5,7 @@ function init() {
   target=platform/${name}
   mkdir -p "${target}"
   go mod init -C "${target}" github.com/viqueen/go-platform/"${target}"
+  go work use -r .
 }
 
 function tidy() {
