@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package Go_Platform;
+
+import "protos/todo/v1/services.proto";
+

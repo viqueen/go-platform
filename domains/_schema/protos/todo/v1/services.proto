@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = "github.com/viqueen/go-platform/domains/_api/todo/v1;todoV1";
+
+import "todo/v1/models.proto";
+
+service TodoService {
+  rpc Create(CreateTodoRequest) returns (TodoResponse);
+  rpc Read(ReadTodoRequest) returns (TodoResponse);
+  rpc Update(UpdateTodoRequest) returns (TodoResponse);
+  rpc Delete(DeleteTodoRequest) returns (TodoResponse);
+}
+
+message CreateTodoRequest {
+  string title = 1;
+}
+
+message ReadTodoRequest {
+  string id = 1;
+}
+
+message UpdateTodoRequest {
+  enum UpdateStrategy {
+    PATCH = 0;
+    ALL = 1;
+  }
+  UpdateStrategy update_strategy = 1;
+  Todo todo = 2;
+}
+
+message DeleteTodoRequest {
+  enum DeleteStrategy {
+    SOFT = 0;
+    HARD = 1;
+  }
+  DeleteStrategy delete_strategy = 1;
+  string id = 2;
+}
+
+message TodoResponse {
+  Todo todo = 1;
+}

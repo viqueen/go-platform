@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option go_package = "github.com/viqueen/go-platform/domains/_api/todo/v1;todoV1";
+
+message Todo {
+  string id = 1;
+  string title = 2;
+}
