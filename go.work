@@ -5,4 +5,5 @@ use (
 	./domains/_api
 	./domains/_schema
 	./domains/_shared
+	./domains/todo
 )
