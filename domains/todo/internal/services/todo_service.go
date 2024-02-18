@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gofrs/uuid"
 	todoV1 "github.com/viqueen/go-platform/domains/_api/todo/v1"
+	"github.com/viqueen/go-platform/domains/_shared/collections"
 	sharedData "github.com/viqueen/go-platform/domains/_shared/data"
 	"github.com/viqueen/go-platform/domains/todo/internal/data"
 	"google.golang.org/grpc/codes"
@@ -33,6 +34,55 @@ func (s TodoService) Create(_ context.Context, req *todoV1.CreateTodoRequest) (*
 	return &todoV1.TodoResponse{
 		Todo: response,
 	}, nil
+}
+
+func (s TodoService) CreateMany(req *todoV1.CreateManyTodosRequest, stream todoV1.TodoService_CreateManyServer) error {
+	partitions := collections.Partition(req.GetTodos(), 2)
+	total := len(req.GetTodos())
+
+	for _, partition := range partitions {
+		output := s.createMany(partition)
+		err := stream.Send(&todoV1.CreateManyTodosResponse{
+			Created: int32(len(output.created)),
+			Failed:  int32(len(output.failed)),
+			Total:   int32(total),
+		})
+		if err != nil {
+			log.Printf("could not send stream - %v", err)
+			return status.Error(codes.Internal, "could not send stream")
+		}
+	}
+
+	return nil
+}
+
+type createManyOutput struct {
+	created []*todoV1.Todo
+	failed  []*todoV1.Todo
+}
+
+func (s TodoService) createMany(todos []*todoV1.CreateTodoRequest) createManyOutput {
+	created := make([]*todoV1.Todo, 0)
+	failed := make([]*todoV1.Todo, 0)
+
+	for _, item := range todos {
+		todo := &todoV1.Todo{
+			Title: item.Title,
+			Id:    uuid.Must(uuid.NewV4()).String(),
+		}
+		response, err := s.access.Todo.Writer.CreateOne(todo)
+		if err != nil {
+			log.Printf("could not create todo - %v", err)
+			failed = append(failed, todo)
+		} else {
+			created = append(created, response)
+		}
+	}
+
+	return createManyOutput{
+		created: created,
+		failed:  failed,
+	}
 }
 
 func (s TodoService) Read(_ context.Context, req *todoV1.ReadTodoRequest) (*todoV1.TodoResponse, error) {
