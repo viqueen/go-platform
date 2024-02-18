@@ -15,34 +15,34 @@ type TodoService struct {
 	access *data.TodoAccess
 }
 
-func NewTodoService(access *data.TodoAccess) (*TodoService, error) {
-	return &TodoService{access: access}, nil
+func NewTodoService(access *data.TodoAccess) *TodoService {
+	return &TodoService{access: access}
 }
 
 func (s TodoService) Create(_ context.Context, req *todoV1.CreateTodoRequest) (*todoV1.TodoResponse, error) {
-	todo := data.Todo{
+	todo := &todoV1.Todo{
 		Title: req.Title,
-		Id:    uuid.Must(uuid.NewV4()),
+		Id:    uuid.Must(uuid.NewV4()).String(),
 	}
-	response, err := s.access.Writer.CreateOne(todo)
+	response, err := s.access.Todo.Writer.CreateOne(todo)
 	if err != nil {
 		log.Printf("could not create todo - %v", err)
 		return nil, status.Error(codes.Internal, "could not create todo")
 	}
 	return &todoV1.TodoResponse{
-		Todo: modelToApi(response),
+		Todo: response,
 	}, nil
 }
 
 func (s TodoService) Read(_ context.Context, req *todoV1.ReadTodoRequest) (*todoV1.TodoResponse, error) {
 	todoId := uuid.FromStringOrNil(req.Id)
-	response, err := s.access.Reader.ReadOne(todoId)
+	response, err := s.access.Todo.Reader.ReadOne(todoId)
 	if err != nil {
 		log.Printf("could not read todo - %v", err)
 		return nil, status.Error(codes.Internal, "could not read todo")
 	}
 	return &todoV1.TodoResponse{
-		Todo: modelToApi(response),
+		Todo: response,
 	}, nil
 }
 

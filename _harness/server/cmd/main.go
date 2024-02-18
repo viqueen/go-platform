@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/viqueen/go-platform/domains/_shared/clients"
 	exportTodo "github.com/viqueen/go-platform/domains/todo/export"
 	"google.golang.org/grpc"
 	"log"
@@ -16,10 +17,12 @@ func main() {
 	}
 	server := grpc.NewServer()
 
-	err = exportTodo.Bundle(server)
+	neo4jClient, err := clients.NewLocalNeo4jClient()
 	if err != nil {
-		log.Fatalf("failed to bundle todo services : %v", err)
+		log.Fatalf("failed to create neo4j client : %v", err)
 	}
+
+	exportTodo.Bundle(server, neo4jClient)
 
 	log.Printf("server running on port %s", address)
 	if err = server.Serve(listener); err != nil {
