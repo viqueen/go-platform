@@ -1,8 +1,11 @@
 package neo4j_access
 
 import (
-	"github.com/viqueen/go-music/domains/_shared/clients"
-	"github.com/viqueen/go-music/domains/_shared/data"
+	"fmt"
+	"github.com/viqueen/go-platform/domains/_shared/clients"
+	"github.com/viqueen/go-platform/domains/_shared/collections"
+	"github.com/viqueen/go-platform/domains/_shared/data"
+	"strings"
 )
 
 type EntityNeo4jWriter[ENTITY interface{}] struct {
@@ -29,8 +32,12 @@ func NewEntityNeo4jWriter[ENTITY interface{}](
 }
 
 func (w *EntityNeo4jWriter[ENTITY]) CreateOne(entity *ENTITY) (*ENTITY, error) {
+	fields := collections.Map(w.entityFields, func(field string) string {
+		return fmt.Sprintf("%s: $%s", field, field)
+	})
+	joined := strings.Join(fields, ", ")
+	query := fmt.Sprintf("CREATE (t:%s {%s})", w.entityName, joined)
 	params := w.paramsMapper(entity)
-	query := "CREATE (t:%s) SET %s RETURN t"
 	err := w.client.ExecuteWriteQuery(query, params)
 
 	if err != nil {
