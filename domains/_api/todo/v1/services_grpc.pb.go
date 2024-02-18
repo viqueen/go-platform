@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TodoService_Create_FullMethodName = "/TodoService/Create"
-	TodoService_Read_FullMethodName   = "/TodoService/Read"
-	TodoService_Update_FullMethodName = "/TodoService/Update"
-	TodoService_Delete_FullMethodName = "/TodoService/Delete"
+	TodoService_Create_FullMethodName   = "/TodoService/Create"
+	TodoService_Read_FullMethodName     = "/TodoService/Read"
+	TodoService_ReadMany_FullMethodName = "/TodoService/ReadMany"
+	TodoService_Update_FullMethodName   = "/TodoService/Update"
+	TodoService_Delete_FullMethodName   = "/TodoService/Delete"
 )
 
 // TodoServiceClient is the client API for TodoService service.
@@ -31,6 +32,7 @@ const (
 type TodoServiceClient interface {
 	Create(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*TodoResponse, error)
 	Read(ctx context.Context, in *ReadTodoRequest, opts ...grpc.CallOption) (*TodoResponse, error)
+	ReadMany(ctx context.Context, in *ReadManyTodosRequest, opts ...grpc.CallOption) (*ReadManyTodosResponse, error)
 	Update(ctx context.Context, in *UpdateTodoRequest, opts ...grpc.CallOption) (*TodoResponse, error)
 	Delete(ctx context.Context, in *DeleteTodoRequest, opts ...grpc.CallOption) (*TodoResponse, error)
 }
@@ -61,6 +63,15 @@ func (c *todoServiceClient) Read(ctx context.Context, in *ReadTodoRequest, opts 
 	return out, nil
 }
 
+func (c *todoServiceClient) ReadMany(ctx context.Context, in *ReadManyTodosRequest, opts ...grpc.CallOption) (*ReadManyTodosResponse, error) {
+	out := new(ReadManyTodosResponse)
+	err := c.cc.Invoke(ctx, TodoService_ReadMany_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *todoServiceClient) Update(ctx context.Context, in *UpdateTodoRequest, opts ...grpc.CallOption) (*TodoResponse, error) {
 	out := new(TodoResponse)
 	err := c.cc.Invoke(ctx, TodoService_Update_FullMethodName, in, out, opts...)
@@ -85,6 +96,7 @@ func (c *todoServiceClient) Delete(ctx context.Context, in *DeleteTodoRequest, o
 type TodoServiceServer interface {
 	Create(context.Context, *CreateTodoRequest) (*TodoResponse, error)
 	Read(context.Context, *ReadTodoRequest) (*TodoResponse, error)
+	ReadMany(context.Context, *ReadManyTodosRequest) (*ReadManyTodosResponse, error)
 	Update(context.Context, *UpdateTodoRequest) (*TodoResponse, error)
 	Delete(context.Context, *DeleteTodoRequest) (*TodoResponse, error)
 	mustEmbedUnimplementedTodoServiceServer()
@@ -99,6 +111,9 @@ func (UnimplementedTodoServiceServer) Create(context.Context, *CreateTodoRequest
 }
 func (UnimplementedTodoServiceServer) Read(context.Context, *ReadTodoRequest) (*TodoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Read not implemented")
+}
+func (UnimplementedTodoServiceServer) ReadMany(context.Context, *ReadManyTodosRequest) (*ReadManyTodosResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadMany not implemented")
 }
 func (UnimplementedTodoServiceServer) Update(context.Context, *UpdateTodoRequest) (*TodoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
@@ -155,6 +170,24 @@ func _TodoService_Read_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_ReadMany_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReadManyTodosRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).ReadMany(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TodoService_ReadMany_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).ReadMany(ctx, req.(*ReadManyTodosRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TodoService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateTodoRequest)
 	if err := dec(in); err != nil {
@@ -205,6 +238,10 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Read",
 			Handler:    _TodoService_Read_Handler,
+		},
+		{
+			MethodName: "ReadMany",
+			Handler:    _TodoService_ReadMany_Handler,
 		},
 		{
 			MethodName: "Update",

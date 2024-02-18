@@ -2,9 +2,14 @@ package data
 
 import "github.com/gofrs/uuid"
 
+type PageInfo struct {
+	PageSize   int32
+	PageOffset int32
+}
+
 type EntityReader[ENTITY interface{}] interface {
 	ReadOne(id uuid.UUID) (*ENTITY, error)
-	ReadAll() ([]*ENTITY, error)
+	ReadMany(pageInfo PageInfo) ([]*ENTITY, error)
 }
 
 type EntityWriter[ENTITY interface{}] interface {

@@ -59,13 +59,17 @@ func (r *EntityNeo4jReader[ENTITY]) ReadOne(id uuid.UUID) (*ENTITY, error) {
 	return entity, nil
 }
 
-func (r *EntityNeo4jReader[ENTITY]) ReadAll() ([]*ENTITY, error) {
+func (r *EntityNeo4jReader[ENTITY]) ReadMany(pageInfo data.PageInfo) ([]*ENTITY, error) {
 	fields := collections.Map(r.entityFields, func(field string) string {
 		return fmt.Sprintf("t.%s", field)
 	})
 	joined := strings.Join(fields, ", ")
-	query := fmt.Sprintf("MATCH (t:%s) RETURN %s", r.entityName, joined)
-
+	query := fmt.Sprintf("MATCH (t:%s) RETURN %s SKIP %d LIMIT %d",
+		r.entityName,
+		joined,
+		pageInfo.PageOffset,
+		pageInfo.PageSize,
+	)
 	result, err := r.client.ExecuteReadQuery(query, nil)
 	if err != nil {
 		return nil, err

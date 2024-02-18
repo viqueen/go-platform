@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gofrs/uuid"
 	todoV1 "github.com/viqueen/go-platform/domains/_api/todo/v1"
+	sharedData "github.com/viqueen/go-platform/domains/_shared/data"
 	"github.com/viqueen/go-platform/domains/todo/internal/data"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -43,6 +44,22 @@ func (s TodoService) Read(_ context.Context, req *todoV1.ReadTodoRequest) (*todo
 	}
 	return &todoV1.TodoResponse{
 		Todo: response,
+	}, nil
+}
+
+func (s TodoService) ReadMany(_ context.Context, req *todoV1.ReadManyTodosRequest) (*todoV1.ReadManyTodosResponse, error) {
+	response, err := s.access.Todo.Reader.ReadMany(sharedData.PageInfo{
+		PageSize:   req.GetPageSize(),
+		PageOffset: req.GetPageOffset(),
+	})
+	if err != nil {
+		log.Printf("could not read todos - %v", err)
+		return nil, status.Error(codes.Internal, "could not read todos")
+	}
+	nextPageOffset := req.GetPageOffset() + int32(len(response))
+	return &todoV1.ReadManyTodosResponse{
+		Todos:          response,
+		NextPageOffset: nextPageOffset,
 	}, nil
 }
 

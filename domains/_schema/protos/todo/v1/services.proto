@@ -7,6 +7,7 @@ import "todo/v1/models.proto";
 service TodoService {
   rpc Create(CreateTodoRequest) returns (TodoResponse);
   rpc Read(ReadTodoRequest) returns (TodoResponse);
+  rpc ReadMany(ReadManyTodosRequest) returns (ReadManyTodosResponse);
   rpc Update(UpdateTodoRequest) returns (TodoResponse);
   rpc Delete(DeleteTodoRequest) returns (TodoResponse);
 }
@@ -17,6 +18,11 @@ message CreateTodoRequest {
 
 message ReadTodoRequest {
   string id = 1;
+}
+
+message ReadManyTodosRequest {
+  int32 page_size = 1;
+  int32 page_offset = 2;
 }
 
 message UpdateTodoRequest {
@@ -39,4 +45,9 @@ message DeleteTodoRequest {
 
 message TodoResponse {
   Todo todo = 1;
+}
+
+message ReadManyTodosResponse {
+  repeated Todo todos = 1;
+  int32 next_page_offset = 2;
 }
